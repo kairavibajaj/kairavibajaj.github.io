@@ -4,24 +4,143 @@ title: Milestone 1
 ---
 
 
+## Step 1: Data Acquisition
 
-#### Question 1
+* Importing the required libraries
+  We will be requiring the following libraries to download our data from the NHL API:
+  * os
+  * urllib
+  * json
+  * tqdm
 
-...content...
+{% highlight js %}
+// Importing libraries
+import os
+import urllib.request, json
+from tqdm import tqdm
 
-#### Question 2
+{% endhighlight %}
 
-...content...
+* NHL data is very rich; it contains information from many years into the past ranging from 
+metadata about the season itself (eg. how many games were played), to season standings, to player 
+stats per season, to fine-grained event data for every game played, known play-by-play data.
+First, we'll start with getting the duration of years for which we want the data.
 
+{% highlight js %}
+def __init__(self, start_year: int, end_year: int, local_data_repo: str) -> None:
+    '''
+    Class Constructor to initialize instance.
 
-## Step 2: Interactive Debugging Tool 
+    Input(s):
+    start_year (int): Year from which data is to be loaded for. (ex. 2017)
+    end_year (int): Year upto which data is to be loaded for. (ex. 2020)
+    local_data_repo (str): path to local data repository from where the data will 
+    be stored/fetched. By default it is set from environment variable DATA_LOC.
+    '''
+    assert start_year > 2015 ,  f"start year should be greater than 2016 expected, got: {start_year}"
+    assert end_year < 2023 ,  f"start year should be less than 2023 expected, got: {end_year}"
+    self.start_year = start_year
+    self.end_year = end_year
+    self.local_data_repo = local_data_repo
 
+def get_years_list(self) -> list: 
+    '''
+    Generates a list of years from start_year to end_year with the increment of 1.
 
-#### Question
-vk
-...content...
+    Input(s):
+    None
 
+    Output:
+    list of years. (ex. [2017, 2018, 2019, 2020]) 
+    '''
+    return list(range(self.start_year, self.end_year+1, 1))
 
+{% endhighlight %}
+
+* Now that we have the years for which we need the data; the next step is to separate the data on basis of the type of the game. This can be done by generating game_ids for different types of matches. It is demonstrated in the following code snippet.
+
+{% highlight js %}
+def generate_game_id(self, game_type: int) -> list:
+        '''
+        For a given year and game type it generates a list of possible game ids.
+        Input(s):
+        game_type (int): Encoded form of game type (i.e 1 for regular match and 2 for playoff)
+        Output: 
+        List of generated 10 digit game_ids.
+        '''
+        years = self.get_years_list()
+        game_ids = []
+        for year in years:
+            if year <2017:
+                total_matches = 1230
+            else:
+                total_matches = 1271
+            match_id_list = list(range(1, total_matches+1, 1))
+            for match_id in match_id_list:
+                game_ids.append(str(year)+f'{game_type:02}'+f'{match_id:04}')
+        return game_ids
+
+{% endhighlight %}
+
+* These generated game_ids will be used to fetch data from the NHL public API. The following function fetches data associated with a particular game_id from the API.
+
+{% highlight js %}
+
+def download_from_endpoint(self, game_id, file_path) -> None:
+        '''
+        Connects to the NHL public API to download game data and saves it to a hierarchical file storage.
+        Input(s):
+        game_id (str) : a particular game id for which data is to be downloaded for.
+        file_path(str): path to local data repository from where the data will be stored/fetched. By default it is set from environment variable DATA_LOC.
+        
+        Output(s):
+        None
+        '''
+        link = "https://statsapi.web.nhl.com/api/v1/game/{0}/feed/live/".format(game_id)
+        try:
+            with urllib.request.urlopen(link) as url:
+                data = json.load(url)
+                os.makedirs(os.path.dirname(file_path), exist_ok=True)
+                with open(file_path, 'w') as f:
+                    json.dump(data, f)
+        except BaseException as e:
+            with open('log.txt', 'a') as logger:
+                logger.write(link+','+str(e)+'\n')
+
+def load_data(self) -> None:
+        '''
+        Generates and iterates over game ids from start year to end year to load the data if not cached then downloads data.
+        Input(s):
+        None
+    
+        Output(s):
+        None
+        '''
+        game_types_list = [2,3]
+        for game_type in game_types_list:
+            id_list = self.generate_game_id(game_type)
+            for game_index in tqdm(range(len(id_list))):
+                file_path = os.path.join(self.local_data_repo, id_list[game_index][:4], id_list[game_index][4:6], str(id_list[game_index][6:])+'.json')
+                if os.path.exists(file_path):
+                    pass
+                else:
+                    self.download_from_endpoint(id_list[game_index], file_path)
+                    pass
+{% endhighlight %}
+
+## Step 2: Interactive Debugging Tool
+
+The tool below allows one to go through the .json format game data downloaded using the Data Acquisition Tool. The top half of the tool selects the desired game, while the botom half looks through the interested events of said game.
+
+The following code snippet gives a summary of how we generated the interactive widget:
+
+![Interactive debugging tool Code](/figures/Screen Shot 2022-10-23 at 2.14.55 PM.png)
+
+Now lets look at the final output. It can be seen in two parts. First part depicts the tool that selects the year and desired game type and second depicts the tool that gives the option to select the type of plays and all the information related to that particular shot.
+
+![Interactive tool 1](/figures/Screen Shot 2022-10-23 at 2.22.19 PM.png)
+
+![Interactive tool 2](/figures/Screen Shot 2022-10-23 at 2.24.29 PM.png)
 
 ## Step 3: Tidy Data
 
@@ -61,6 +180,12 @@ This image shows the percentage of goals per shots given by shot type of distanc
 
 
 ## Step 4: Advanced Visualizations
+
+{% include 2016.html %}
+{% include 2017.html %}
+{% include 2018.html %}
+{% include 2019.html %}
+{% include 2020.html %}
 
 Looking at the figures from season 2016-2020, there is a main trend with the shots. The average team takes most shots from the slot, and either side of the point (blue line). The heat map featuring the expected shots is interesting as it shows how each team differs. Most teams take more or less slots shots, and more or less right and left point shots. There aren't many shots expected to be from areas near the boards or behind the net. These plots are quite useful in determining how many shots per average each team takes in comparing to the league average. It is also interesting to see teams with superstars taking more shots from the players' positions. As an example, on the Washington Capitals, there is a much higher than average shot excess per game at the left faceoff circle which is known to be Alex Ovechkin's (consistent 50+ goal scorer) position.
 
