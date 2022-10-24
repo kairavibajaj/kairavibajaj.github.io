@@ -43,15 +43,15 @@ The first that could be useful would be a binary variable indicating if the shot
 ## Step 3: Simple Visualizations
 
 
-![image](/figures/stats_by_shottypstats_by_shottype.png "Shot Type")
+![image](/figures/stats_by_shottype.png "Shot Type")
 
 
 From this data, tip-ins and deflected shots have the highest percentage of goals per shot. However, they are also the least common type of shot. Wrist shots are the most common type of shot and result in the most amount of goals however only 10% go in. This figure perfectly illustrates the shots/goals per shot type.
 
 
-![alt-text-1](/figures/shot_distances.png "title-1") ![alt-text-2](/figures/shot_distances2.png "title-2")
-![alt-text-1](/figures/shot_distances3.png "title-3") ![alt-text-2](/figures/shot_distances4.png "title-4")
-![alt-text-1](/figures/shot_distances5.png "title-5")
+![alt-text-1](/figures/shot_distances.png "title-1") ![alt-text-2](/figures/shotdistances2.png "title-2")
+![alt-text-1](/figures/shotdistances3.png "title-3") ![alt-text-2](/figures/shotdistances4.png "title-4")
+![alt-text-1](/figures/shotdistances5.png "title-5")
 
 It's apparent that the number of shots increases from the net to a couple meters out. This is where the most amont of goals/shit is. After around 17m from the net, there is a significant drop-off in goals but shots remain about the same. There figures illustrate the shot/goal ratio for distances for each given season.
 
